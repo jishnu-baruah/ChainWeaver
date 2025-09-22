@@ -56,11 +56,38 @@ export default async function handler(req, res) {
       url: 'https://rpc.testnet.near.org',
     });
 
-    // Create signer from private key
-    const signer = KeyPairSigner.fromSecretKey(privateKey);
+    // Validate private key format
+    if (!privateKey.startsWith('ed25519:')) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Private key must start with "ed25519:". Please provide a valid NEAR private key.',
+      });
+    }
 
-    // Step 3: Create Account
+    // Create signer from private key
+    let signer;
+    try {
+      signer = KeyPairSigner.fromSecretKey(privateKey);
+    } catch (keyError) {
+      return res.status(400).json({
+        status: 'error',
+        message: `Invalid private key format: ${keyError.message}. Please provide a valid NEAR private key.`,
+      });
+    }
+
+    // Step 3: Create Account and Validate
     const account = new Account(signerId, provider, signer);
+
+    // Check if account exists and get account info
+    try {
+      const accountInfo = await account.getAccountInfo();
+      console.log(`Account ${signerId} exists with balance: ${accountInfo.balance}`);
+    } catch (accountError) {
+      return res.status(400).json({
+        status: 'error',
+        message: `Account ${signerId} does not exist on testnet or is not accessible. Please check the account ID.`,
+      });
+    }
 
     // Step 4: Convert amount to yoctoNEAR
     const yoctoNEARAmount = NEAR.toUnits(amount.toString());
