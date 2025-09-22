@@ -3,8 +3,5 @@
     "api/sign-and-send.js": {
       "maxDuration": 30
     }
-  },
-  "env": {
-    "NODE_ENV": "production"
   }
 }
