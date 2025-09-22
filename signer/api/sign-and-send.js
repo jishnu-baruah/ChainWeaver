@@ -6,6 +6,7 @@ import { JsonRpcProvider } from '@near-js/providers';
 import { KeyPairSigner } from '@near-js/signers';
 import { NEAR } from '@near-js/tokens';
 import { actionCreators } from '@near-js/transactions';
+import { OneClickService, QuoteRequest } from '@defuse-protocol/one-click-sdk-typescript';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -75,39 +76,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Step 3: Create Account and Validate
+    // Step 3: Create Account (skip validation, try direct transaction like workshop)
     console.log(`Attempting to create account for: ${signerId}`);
     const account = new Account(signerId, provider, signer);
-
-    // Check if account exists and get account info (mainnet)
-    try {
-      const accountInfo = await account.getAccountInfo();
-      console.log(`Account ${signerId} exists on mainnet with balance: ${accountInfo.balance}`);
-    } catch (accountError) {
-      console.error('Account validation error:', {
-        signerId,
-        error: accountError.message,
-        errorType: accountError.constructor.name
-      });
-      
-      // Try to get more specific error information
-      if (accountError.message.includes('does not exist')) {
-        return res.status(400).json({
-          status: 'error',
-          message: `Account ${signerId} does not exist on mainnet. NEAR accounts typically have names like 'alice.near'. Please check the account ID format.`,
-        });
-      } else if (accountError.message.includes('access key')) {
-        return res.status(400).json({
-          status: 'error',
-          message: `Access key issue for account ${signerId}. The private key may not be associated with this account.`,
-        });
-      } else {
-        return res.status(400).json({
-          status: 'error',
-          message: `Account validation failed: ${accountError.message}. Please check the account ID and private key.`,
-        });
-      }
-    }
 
     // Step 4: Convert amount to yoctoNEAR
     const yoctoNEARAmount = NEAR.toUnits(amount.toString());
