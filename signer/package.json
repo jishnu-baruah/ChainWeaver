@@ -1,0 +1,17 @@
+{
+  "name": "chainweaver-signer",
+  "version": "1.0.0",
+  "description": "NEAR Signer Microservice for ChainWeaver",
+  "main": "api/sign-and-send.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "near-api-js": "^0.44.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
