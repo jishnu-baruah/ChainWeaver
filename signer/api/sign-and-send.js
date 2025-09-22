@@ -1,5 +1,5 @@
 // NEAR Signer Microservice - Serverless Relayer
-// Handles secure transaction signing and broadcasting to NEAR testnet using modern @near-js packages
+// Handles secure transaction signing and broadcasting to NEAR mainnet using 1-click API approach
 
 import { Account } from '@near-js/accounts';
 import { JsonRpcProvider } from '@near-js/providers';
@@ -51,9 +51,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Step 2: Initialize Provider and Signer
+    // Step 2: Initialize Provider and Signer (matching workshop approach)
     const provider = new JsonRpcProvider({
-      url: 'https://rpc.testnet.near.org',
+      url: 'https://rpc.mainnet.fastnear.com',
     });
 
     // Validate private key format
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Create signer from private key
+    // Create signer from private key (matching workshop approach)
     let signer;
     try {
       signer = KeyPairSigner.fromSecretKey(privateKey);
@@ -78,21 +78,21 @@ export default async function handler(req, res) {
     // Step 3: Create Account and Validate
     const account = new Account(signerId, provider, signer);
 
-    // Check if account exists and get account info
+    // Check if account exists and get account info (mainnet)
     try {
       const accountInfo = await account.getAccountInfo();
-      console.log(`Account ${signerId} exists with balance: ${accountInfo.balance}`);
+      console.log(`Account ${signerId} exists on mainnet with balance: ${accountInfo.balance}`);
     } catch (accountError) {
       return res.status(400).json({
         status: 'error',
-        message: `Account ${signerId} does not exist on testnet or is not accessible. Please check the account ID.`,
+        message: `Account ${signerId} does not exist on mainnet or is not accessible. Please check the account ID.`,
       });
     }
 
     // Step 4: Convert amount to yoctoNEAR
     const yoctoNEARAmount = NEAR.toUnits(amount.toString());
 
-    // Step 5: Create and Send Transaction
+    // Step 5: Create and Send Transaction (matching workshop approach)
     const { transaction } = await account.signAndSendTransaction({
       receiverId: receiverId,
       actions: [

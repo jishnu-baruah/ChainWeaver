@@ -12,7 +12,8 @@
     "@near-js/crypto": "^2.0.2",
     "@near-js/providers": "^2.0.2",
     "@near-js/signers": "^2.0.2",
-    "@near-js/tokens": "^2.0.2"
+    "@near-js/tokens": "^2.0.2",
+    "@defuse-protocol/one-click-sdk-typescript": "^0.1.5"
   },
   "engines": {
     "node": ">=18.0.0"
