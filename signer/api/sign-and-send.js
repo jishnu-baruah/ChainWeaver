@@ -1,7 +1,11 @@
 // NEAR Signer Microservice - Serverless Relayer
-// Handles secure transaction signing and broadcasting to NEAR testnet
+// Handles secure transaction signing and broadcasting to NEAR testnet using modern @near-js packages
 
-import { connect, KeyPair, keyStores, utils } from 'near-api-js';
+import { Account } from '@near-js/accounts';
+import { JsonRpcProvider } from '@near-js/providers';
+import { KeyPairSigner } from '@near-js/signers';
+import { NEAR } from '@near-js/tokens';
+import { actionCreators } from '@near-js/transactions';
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -47,43 +51,35 @@ export default async function handler(req, res) {
       });
     }
 
-    // Step 2: Dependency Import (already imported at top)
-    // Step 3: Key & Keystore
-    const keyPair = KeyPair.fromString(privateKey);
-    const keyStore = new keyStores.InMemoryKeyStore();
-    
-    // Add the key to the keystore for the signerId and testnet network
-    await keyStore.setKey('testnet', signerId, keyPair);
-
-    // Step 4: NEAR Connection
-    const near = await connect({
-      deps: { keyStore },
-      nodeUrl: 'https://rpc.testnet.near.org',
-      networkId: 'testnet',
+    // Step 2: Initialize Provider and Signer
+    const provider = new JsonRpcProvider({
+      url: 'https://rpc.testnet.near.org',
     });
 
-    // Step 5: Account & Execution
-    const account = await near.account(signerId);
-    
-    // Convert amount from NEAR to yoctoNEAR
-    const yoctoNEARAmount = utils.format.parseNearAmount(amount.toString());
-    
-    if (!yoctoNEARAmount) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Invalid amount format. Please provide a valid NEAR amount.',
-      });
-    }
+    // Create signer from private key
+    const signer = KeyPairSigner.fromSecretKey(privateKey);
 
-    // Send the transaction
-    const result = await account.sendMoney(receiverId, yoctoNEARAmount);
+    // Step 3: Create Account
+    const account = new Account(signerId, provider, signer);
+
+    // Step 4: Convert amount to yoctoNEAR
+    const yoctoNEARAmount = NEAR.toUnits(amount.toString());
+
+    // Step 5: Create and Send Transaction
+    const { transaction } = await account.signAndSendTransaction({
+      receiverId: receiverId,
+      actions: [
+        actionCreators.transfer(yoctoNEARAmount),
+      ],
+      waitUntil: 'EXECUTED_OPTIMISTIC',
+    });
 
     // Step 6: Respond with Success
-    console.log(`Transaction successful: ${signerId} -> ${receiverId}, Amount: ${amount} NEAR, Hash: ${result.transaction.hash}`);
+    console.log(`Transaction successful: ${signerId} -> ${receiverId}, Amount: ${amount} NEAR, Hash: ${transaction.hash}`);
     
     return res.status(200).json({
       status: 'success',
-      transactionHash: result.transaction.hash,
+      transactionHash: transaction.hash,
     });
 
   } catch (error) {

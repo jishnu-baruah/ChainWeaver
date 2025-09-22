@@ -79,7 +79,7 @@ export class ChainWeaver implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 
 		// Hardcoded API endpoint for the Signer microservice
-		const SIGNER_ENDPOINT = 'https://your-signer-deployment.vercel.app/api/sign-and-send';
+		const SIGNER_ENDPOINT = 'https://chain-weaver.vercel.app/api/sign-and-send';
 
 		for (let i = 0; i < items.length; i++) {
 			try {
